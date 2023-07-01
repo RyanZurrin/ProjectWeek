@@ -12,9 +12,9 @@ root = tree.getroot()
 for group in root.findall('ns:g', ns):
     for path in group[0].findall('ns:path', ns):
         # try setting each element from 0-10 degrees to white
-        if(path.attrib["{http://www.inkscape.org/namespaces/inkscape}label"] == "0-10"):
+        if (path.attrib["{http://www.inkscape.org/namespaces/inkscape}label"] == "0-10"):
             style = path.attrib["style"]
-            style = style[0:20] + "ffffff" + style[27:]
+            style = f"{style[:20]}ffffff{style[27:]}"
             print(style)
             #style[21:27] = "FFFFFF"
             path.set('style', style)

@@ -202,9 +202,8 @@ class TMSRecordDataModuleLogic(ScriptedLoadableModuleLogic):
     sliceLogic = slice.sliceLogic()
     sliceLogic.GetSliceCompositeNode().SetBackgroundVolumeID(cameraNode.GetID())
 
-    resliceLogic = slicer.modules.volumereslicedriver.logic()
-    if resliceLogic:
-      sliceNode = slicer.util.getNode('vtkMRMLSliceNode'+sliceColor)
+    if resliceLogic := slicer.modules.volumereslicedriver.logic():
+      sliceNode = slicer.util.getNode(f'vtkMRMLSliceNode{sliceColor}')
       sliceNode.SetSliceResolutionMode(slicer.vtkMRMLSliceNode.SliceResolutionMatchVolumes)
       resliceLogic.SetDriverForSlice(cameraNode.GetID(), sliceNode)
       resliceLogic.SetModeForSlice(6, sliceNode)
@@ -213,7 +212,7 @@ class TMSRecordDataModuleLogic(ScriptedLoadableModuleLogic):
       #sliceLogic.FitSliceToAll()
 
   def StartRecording(self,fileName):
-    self.fileName = fileName + "-" + time.strftime("%Y%m%d-%H%M%S")
+    self.fileName = f"{fileName}-" + time.strftime("%Y%m%d-%H%M%S")
     self.recordingStartTime = vtk.vtkTimerLog.GetUniversalTime()
     self.herniaSequenceBrowserNode = slicer.vtkMRMLSequenceBrowserNode()
     self.startSequenceBrowserRecording(self.herniaSequenceBrowserNode)

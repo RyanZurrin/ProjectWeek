@@ -176,8 +176,8 @@ class DepthImageToPointCloudLogic(ScriptedLoadableModuleLogic):
     logging.info('Processing started')
 
     inputImage = inputVolume.GetImageData()
-    imageDims = inputImage.GetDimensions()[0:2]
-    
+    imageDims = inputImage.GetDimensions()[:2]
+
     #Extract the vtkImageData from the vtkMRMLScalarVolumeNode
     extractFilterDepth = vtk.vtkImageExtractComponents()
     extractFilterDepth.SetInputData(inputImage)
@@ -194,7 +194,7 @@ class DepthImageToPointCloudLogic(ScriptedLoadableModuleLogic):
     polyData = self.generatePolyData(listOfPoints)
 
     outputVolume.SetAndObservePolyData(polyData)
- 
+
     logging.info('Processing completed')
 
     return True

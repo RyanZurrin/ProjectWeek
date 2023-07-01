@@ -132,8 +132,8 @@ class ExportFrameToPointsWidget(ScriptedLoadableModuleWidget, VTKObservationMixi
 
     # Select default input nodes if nothing is selected yet to save a few clicks for the user
     if not self._parameterNode.GetNodeReference("DepthImageNode"):
-      firstVolumeNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLScalarVolumeNode")
-      if firstVolumeNode:
+      if firstVolumeNode := slicer.mrmlScene.GetFirstNodeByClass(
+          "vtkMRMLScalarVolumeNode"):
         self._parameterNode.SetNodeReferenceID("DepthImageNode", firstVolumeNode.GetID())
 
   def setParameterNode(self, inputParameterNode):
@@ -237,11 +237,6 @@ class ExportFrameToPointsLogic(ScriptedLoadableModuleLogic):
     self.depthImage = numpy.array([[self.convertRGBtoD(j) for j in imdata[i]] for i in range(shape[0])])
 
   def convertRGBtoD(self,pixel1):
-    is_disparity = False
-    min_depth = 0.16
-    max_depth = 300.0
-    min_disparity = 1.0 / max_depth
-    max_disparity = 1.0 / min_depth
     r_value = float(pixel1[0])
     g_value = float(pixel1[1])
     b_value = float(pixel1[2])
@@ -260,10 +255,14 @@ class ExportFrameToPointsLogic(ScriptedLoadableModuleLogic):
       hue_value = r_value - g_value + 1020
 
     if (hue_value > 0):
+      is_disparity = False
+      min_depth = 0.16
+      max_depth = 300.0
       if not is_disparity:
-        z_value = ((min_depth + (max_depth - min_depth) * hue_value / 1529.0) + 0.5);
-        depthValue = z_value
+        depthValue = ((min_depth + (max_depth - min_depth) * hue_value / 1529.0) + 0.5)
       else:
+        min_disparity = 1.0 / max_depth
+        max_disparity = 1.0 / min_depth
         disp_value = min_disparity + (max_disparity - min_disparity) * hue_value / 1529.0
         depthValue = ((1.0 / disp_value) / 1000 + 0.5)
     else:
@@ -283,8 +282,8 @@ class ExportFrameToPointsLogic(ScriptedLoadableModuleLogic):
     if components > 1:
       shape.append(components)
       shape.remove(1)
-    imageMat = vtk.util.numpy_support.vtk_to_numpy(image.GetPointData().GetScalars()).reshape(shape)
-    return imageMat
+    return vtk.util.numpy_support.vtk_to_numpy(
+        image.GetPointData().GetScalars()).reshape(shape)
 
   def getDepthImageData(self):
     imdata = self.getVtkImageDataAsOpenCVMat()
@@ -292,14 +291,14 @@ class ExportFrameToPointsLogic(ScriptedLoadableModuleLogic):
     if len(shape) > 2:
       self.removeColorizing()
     else:
-      self.depthImage = numpy.array([[j for j in imdata[i]] for i in range(shape[0])])
+      self.depthImage = numpy.array([list(imdata[i]) for i in range(shape[0])])
 
 
   def convertDepthToPoints(self):
     try:
       self.fiducialNode = slicer.util.getNode("depthFiducials")
       numFiducials = self.fiducialNode.GetNumberOfFiducials()
-      for i in range(numFiducials,0,-1):
+      for _ in range(numFiducials,0,-1):
         self.fiducialNode.RemoveAllMarkups()
     except slicer.util.MRMLNodeNotFoundException:
       self.fiducialNode = slicer.vtkMRMLMarkupsFiducialNode()

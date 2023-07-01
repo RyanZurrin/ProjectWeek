@@ -13,7 +13,7 @@ displayWidget = qt.QTextEdit()
 displayWidget.setText(docHtml)
 displayWidget.show()
 
-doc = vtk.vtkXMLUtilities.ReadElementFromString("<root>"+docHtml+"</root>")
+doc = vtk.vtkXMLUtilities.ReadElementFromString(f"<root>{docHtml}</root>")
 question = {}
 questions = []
 for index0 in range(doc.GetNumberOfNestedElements()):
@@ -23,9 +23,7 @@ for index0 in range(doc.GetNumberOfNestedElements()):
         # Save old question first
         if question:
             questions.append(question)
-        question = {}
-        question['title'] = element0.GetCharacterData()
-        question['answers'] = []
+        question = {'title': element0.GetCharacterData(), 'answers': []}
     if element0.GetName() == 'ul':
         # Found a new answer list
         for index1 in range(element0.GetNumberOfNestedElements()):
